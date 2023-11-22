@@ -1,56 +1,61 @@
-const Header = (props) => {
-  return (
-    <div>
-      <h1>{props.courseName} </h1>
-    </div>
-  )
-}
+import { useState } from 'react'
+import Note from './components/Note'
 
-const Part = (props) => {
-  return (
+const App = (props) => {
+  const [notes, setNotes] = useState(props.notes)
+  const [newNote, setNewNote] = useState(
+    ''
+  ) 
+  const [showAll, setShowAll] = useState(true)
 
-    <div>
-      <p>{props.name} {props.exercises} </p>
-    </div>
-  )
-}
+  const addNote = (event) => {
+    event.preventDefault()
+    const noteObject = {
+      content: newNote,
+      important: Math.random() > 0.5,
+      id: notes.length + 1,
+    }
+  
+    setNotes(notes.concat(noteObject))
+    setNewNote('')
+  }
 
-const Content = (props) => {
-  return (
-    <div>
-        <Part name={props.part1} exercises={props.exercises1} />
-        <Part name={props.part2} exercises={props.exercises2} />
-        <Part name={props.part3} exercises={props.exercises3} />
-    </div>
-  )
-}
+  const handleNoteChange = (event) => {
+    const value = event.target.value;
+  
+    // Clear the default text when user starts typing
+    if (newNote === 'a new note...' && value !== '') {
+      setNewNote(value);
+    } else {
+      console.log(value);
+      setNewNote(value);
+    }
+  }
 
-const Exercises = (props) => {
-  return (
-    <div>
-      <p>
-       Number of Exercises {props.totalExercises} 
-      </p>
-    </div>
-  )
-}
-
-
-
-const App = () => {
-  const course = 'Half Stack application development'
-  const part1 = 'Fundamentals of React'
-  const exercises1 = 10
-  const part2 = 'Using props to pass data'
-  const exercises2 = 7
-  const part3 = 'State of a component'
-  const exercises3 = 14
+  const notesToShow = showAll 
+  ? notes : notes.filter(note => note.important === true)
 
   return (
     <div>
-      <Header courseName = {course} />
-      <Content part1={part1} exercises1={exercises1} part2={part2} exercises2={exercises2} part3={part3} exercises3={exercises3} />
-      <Exercises totalExercises={exercises1 + exercises2 + exercises3} />
+      <h1>Notes</h1>
+      <div>
+        <button onClick={() => setShowAll(!showAll)}>
+          show {showAll ? 'important' : 'all' }
+        </button>
+      </div>
+      <ul>
+        {notesToShow.map(note => 
+          <Note key={note.id} note={note} />
+        )}
+      </ul>
+      <form onSubmit={addNote}>
+      <input
+          value={newNote}
+          onChange={handleNoteChange}
+          placeholder="a new note..."
+        />
+        <button type="submit">save</button>
+      </form> 
     </div>
   )
 }
