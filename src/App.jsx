@@ -7,6 +7,7 @@ const App = () => {
   ]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [searchTerm, setSearchTerm] = useState('');
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -41,6 +42,12 @@ const App = () => {
     setNewNumber(event.target.value)
   }
 
+  const handleSearchChange = (event) => { // Handler for search term input
+    setSearchTerm(event.target.value);
+  };
+
+
+    // If it is true and does exist, then only show the names that incldue that. Else show the whole list.
   const filteredPersons = searchTerm
   ? persons.filter(person => person.name.toLowerCase().includes(searchTerm.toLowerCase()))
   : persons;
@@ -50,7 +57,8 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       Filter <input 
-        onChange={handleNameChange}/>
+        value={searchTerm} // Use the searchTerm state here
+        onChange={handleSearchChange}/>
 
 
       <form onSubmit={addPerson}>
@@ -73,7 +81,7 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       <ul>
-        {persons.map(person => 
+        {filteredPersons.map(person => 
           <li key={person.name}>{person.name} <strong>{person.number}</strong></li>)}
       </ul>
     </div>
