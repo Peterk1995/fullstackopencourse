@@ -26,11 +26,24 @@ const App = () => {
     event.preventDefault()
 
     // Check if the name exists in the array
-    const nameExists = persons.some(person => person.name === newName);
+    const personToUpdate = persons.find(person => person.name === newName);
 
-    if (nameExists) {
-      alert(`${newName}  already exists in the phoneBook.`)
-    } else {
+    if (personToUpdate) {
+      const confirmUpdate = window.confirm(`${newName} already exists in the phoneBook. Would you like to replace the old number with a new one?`);
+      if (confirmUpdate) {
+        const updatedPerson = { ...personToUpdate, number: newNumber };
+        phonebookservices
+        .updatePerson(personToUpdate.id, updatedPerson)
+        .then(response => {
+          setPersons(persons.map(p => p.id !== personToUpdate.id ? p : response.data));
+          setNewName('');
+          setNewNumber('');
+        })
+        .catch(error => {
+          console.log('Error updating person:', error);
+        });
+    }
+  } else {
       // Add the person as regular.
     const personObject = {
       name: newName,
@@ -63,6 +76,24 @@ const App = () => {
     setSearchTerm(event.target.value);
   };
 
+  const handleDelete = id => {
+    const personToDelete = persons.find(p => p.id === id);
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${personToDelete.name}?`);
+    
+    if (confirmDelete) {
+    phonebookservices
+      .deletePerson(id)
+      .then(() => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
+      .catch(error => {
+        console.log('Error deleting person:', error)
+      })
+    }
+  }
+
+
+
 
     // If it is true and does exist, then only show the names that incldue that. Else show the whole list.
   const filteredPersons = searchTerm
@@ -79,7 +110,7 @@ const App = () => {
       <PersonForm addPerson={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChanged={handleNumberChanged}/>
 
       <h3> Numbers </h3>
-      <Persons persons={filteredPersons}/>
+      <Persons persons={filteredPersons} onDelete={handleDelete}/>
     </div>
   )
 }
