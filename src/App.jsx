@@ -4,12 +4,15 @@ import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import axios from 'axios'
 import phonebookservices from './services/phonebookservices';
+import Notification from './components/Notification';
+import './index.css'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchTerm, setSearchTerm] = useState('');
+  const [notification, setNotification] = useState(null)
 
   useEffect(() =>  {
     phonebookservices
@@ -57,6 +60,10 @@ const App = () => {
       setPersons(persons.concat(response.data))
       setNewNumber('')
       setNewName('')
+      setNotification(`Added '${newName}`)
+      setTimeout(() => {
+        setNotification(null)
+      }, 5000)
     })
   }
 }
@@ -111,6 +118,7 @@ const App = () => {
 
       <h3> Numbers </h3>
       <Persons persons={filteredPersons} onDelete={handleDelete}/>
+      <Notification message={notification} />
     </div>
   )
 }
