@@ -38,12 +38,15 @@ const App = () => {
         phonebookservices
         .updatePerson(personToUpdate.id, updatedPerson)
         .then(response => {
-          setPersons(persons.map(p => p.id !== personToUpdate.id ? p : response.data));
-          setNewName('');
-          setNewNumber('');
+          setPersons(persons.map(p => p.id !== personToUpdate.id ? p : response.data))
+          setNewName('')
+          setNewNumber('')
+          setNotification({message: `Information of '${newName}' has been updated`, type: 'success'})
+
         })
         .catch(error => {
-          console.log('Error updating person:', error);
+          console.log('Error updating person:', error)
+          setNotification({message: `Information of '${newName}' has an error`, type: error})
         });
     }
   } else {
@@ -60,10 +63,10 @@ const App = () => {
       setPersons(persons.concat(response.data))
       setNewNumber('')
       setNewName('')
-      setNotification(`Added '${newName}`)
+      setNotification({ message: `Added '${newName}'`, type: 'success' });
       setTimeout(() => {
-        setNotification(null)
-      }, 5000)
+        setNotification(null);
+      }, 5000);
     })
   }
 }
@@ -118,7 +121,7 @@ const App = () => {
 
       <h3> Numbers </h3>
       <Persons persons={filteredPersons} onDelete={handleDelete}/>
-      <Notification message={notification} />
+      <Notification notification={notification} />
     </div>
   )
 }
