@@ -1,126 +1,60 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
-import Note from './components/Note'
-import noteService from './services/notes'
-import Notification from './components/Notification'
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Footer = () => {
-  const footerStyle = {
-    color: 'green',
-    fontStyle: 'italic',
-    fontSize: 16
-  }
-  return (
-    <div style={footerStyle}>
-      <br />
-      <em> Note App, department of Runescape in 2023 </em>
-    </div>
-  )
-}
-
-
-const App = (props) => {
-  const [notes, setNotes] = useState(null)
-  const [newNote, setNewNote] = useState('') 
-  const [showAll, setShowAll] = useState(true)
-  const [errorMessage, setErrorMessage] = useState(null)
-
-
-
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5
-    }
-
-    noteService
-      .create(noteObject)
-      .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
-      })
-  }
-
-
-
-
-  const handleNoteChange = (event) => {
-    const value = event.target.value;
-  
-    // Clear the default text when user starts typing
-    if (newNote === 'a new note...' && value !== '') {
-      setNewNote(value);
-    } else {
-      console.log(value);
-      setNewNote(value);
-    }
-  }
-
-  const notesToShow = showAll 
-  ? notes : notes.filter(note => note.important === true)
+const App = () => {
+  const [query, setQuery] = useState(''); // The user's search query
+  const [countries, setCountries] = useState([]); // The list of countries fetched
 
   useEffect(() => {
-    noteService
-      .getAll()
-      .then(initialNotes => {
-        setNotes(initialNotes)
-      })
-  }, [])
+    if (query) {
+      axios
+        .get(`https://restcountries.com/v3.1/name/${query}`)
+        .then(response => {
+          setCountries(response.data);
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    }
+  }, [query]);
 
-  if (!notes) { 
-    return null 
-  }
+  const handleChange = (event) => {
+    setQuery(event.target.value);
+  };
 
-  const toggleImportanceOf = id => {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-
-    noteService
-      .update(id, changedNote).then(returnedNote => {
-        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
-      })
-      .catch(error => {
-
-        setErrorMessage(
-          `Note '${note.content}' was already removed from server`
-        )
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
-        setNotes(notes.filter(n => n.id !== id))
-      })
-  }
-  
+  const renderResults = () => {
+    if (countries.length > 10) {
+      return <p>Too many matches, specify another filter</p>;
+    } else if (countries.length > 1) {
+      return countries.map((country, index) => <p key={index}>{country.name.common}</p>);
+    } else if (countries.length === 1) {
+      const country = countries[0];
+      return (
+        <div>
+          <h1>{country.name.common}</h1>
+          <p>capital {country.capital}</p>
+          <p>area {country.area}</p>
+          <div>
+            <h3>languages:</h3>
+            <ul>
+              {Object.values(country.languages).map((language, index) => (
+                <li key={index}>{language}</li>
+              ))}
+            </ul>
+          </div>
+          <img src={country.flags.png} alt={`Flag of ${country.name.common}`} style={{width: '100px', height: 'auto'}} />
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div>
-      <h1>Notes</h1>
-      <Notification message={errorMessage} />
       <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all' }
-        </button>
+        find countries <input value={query} onChange={handleChange} />
       </div>
-      <ul>
-        {notesToShow.map(note => 
-          <Note key={note.id} 
-          note={note}  
-          toggleImportance={() => toggleImportanceOf(note.id)}
-          />
-        )}
-      </ul>
-      <form onSubmit={addNote}>
-      <input
-          value={newNote}
-          onChange={handleNoteChange}
-          placeholder="a new note..."
-        />
-        <button type="submit">save</button>
-      </form> 
-      <Footer/>
+      {renderResults()}
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
